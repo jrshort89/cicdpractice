@@ -1,0 +1,11 @@
+from node:16-alpine
+
+workdir /app
+
+copy package.json .
+run npm install
+
+# not used in docker-compose since we use volumes to reference local files
+copy . .
+
+cmd ["npm", "run", "start"]
