@@ -12,6 +12,23 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
       - run: docker login -u ${{ env.DOCKER_USERNAME }} -p ${{ env.DOCKER_PASSWORD }}
       - run: docker build -t cygnetops/react-test -f Dockerfile.dev .
       - run: docker run -e CI=true cygnetops/react-test npm test
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x '*.git*'
+ 
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ env.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ env.AWS_SECRET_KEY }}
+          application_name: mydeploymentpractice
+          environment_name: Mydepoloymentpractice-env
+          existing_bucket_name: elasticbeanstalk-us-east-1-485085726266
+          region: us-east-1
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip
